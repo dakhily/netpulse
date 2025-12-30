@@ -1,0 +1,10 @@
+# --- DATA  ---
+grafana-data/
+prometheus-data/
+
+# --- SECRETS & LOCAL CONFIG ---
+.env
+
+# --- SYSTEM & IDE ---
+.vscode/
+.idea/
