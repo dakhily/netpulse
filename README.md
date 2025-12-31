@@ -1,4 +1,4 @@
-# 🚀 Netpulse
+# Netpulse
 > **High-concurrency network observability prober built in Go.**
 
 [![Status: Work in Progress](https://img.shields.io/badge/status-work--in--progress-orange)](#)
@@ -7,7 +7,7 @@
 
 Netpulse is a production-grade network health monitoring tool. It bridges the gap between traditional "up/down" checks and deep SRE observability by tracking **p99 latency histograms**, jitter, and error rates across multiple endpoints simultaneously.
 
-## 🛠️ Tech Stack
+## Tech Stack
 - **Language:** Go (High-concurrency Goroutines)
 - **Observability:** Prometheus & Grafana
 - **Infrastructure:** Docker & Docker Compose
@@ -15,20 +15,20 @@ Netpulse is a production-grade network health monitoring tool. It bridges the ga
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 Netpulse runs as a containerized service that probes targets and exposes a `/metrics` endpoint. Prometheus scrapes these metrics, and Grafana visualizes them to provide real-time insights into network performance.
 
 
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Docker & Docker Compose installed.
 - Go 1.21+ (if running locally).
 
-### 🛠️ Installation & Setup
+### Installation & Setup
 1. **Clone the repository:**
    ```bash
    git clone [https://github.com/dakhily/netpulse.git](https://github.com/dakhily/netpulse.git)
@@ -45,7 +45,7 @@ Netpulse runs as a containerized service that probes targets and exposes a `/met
    ```bash
    docker compose down
 
-📜 License
+License
 
 Distributed under the GPLv3 License. See LICENSE for more information.
 

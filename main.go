@@ -4,6 +4,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -19,10 +20,17 @@ var pingLatency = promauto.NewHistogramVec(
 			0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 1.0, 2.5, 5.0,
 		},
 	},
-	[]string{"target"},
+	[]string{"target", "status"},
 )
 
+var pingCount = promauto.NewCounterVec(prometheus.CounterOpts{
+	Name: "netpulse_requests_total",
+	Help: "Total number of pings sent",
+}, []string{"target"})
+
 func probe(target string) {
+	pingCount.WithLabelValues(target).Inc()
+
 	start := time.Now()
 	client := http.Client{Timeout: 5 * time.Second}
 
@@ -31,11 +39,13 @@ func probe(target string) {
 
 	if err != nil {
 		fmt.Printf("Error probing %s: %v\n", target, err)
+		pingLatency.WithLabelValues(target, "error").Observe(duration)
 		return
 	}
 	defer resp.Body.Close()
 
-	pingLatency.WithLabelValues(target).Observe(duration)
+	status := strconv.Itoa(resp.StatusCode)
+	pingLatency.WithLabelValues(target, status).Observe(duration)
 
 	fmt.Printf("Target: %s | Latency: %v\n", target, duration)
 }
