@@ -4,6 +4,7 @@ services:
     build: .
     ports:
       - '8080:8080'
+    cpus: "2.0"
 
   prometheus:
     container_name: prometheus
@@ -27,6 +28,18 @@ services:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /:/roofs:ro
+  
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - 8081:8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
 
   grafana:
     container_name: grafana

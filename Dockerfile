@@ -5,7 +5,7 @@ RUN go mod download
 ENV CGO_ENABLED=0 GOOS=linux
 RUN go build -o ./netpulse
 
-FROM scratch
+FROM alpine:3.18
 WORKDIR /app
 COPY  --from=builder /build/netpulse ./netpulse
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
