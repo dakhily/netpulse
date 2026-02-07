@@ -49,6 +49,15 @@ services:
     volumes:
       - ./grafana-data:/var/lib/grafana
       - ./provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SMTP_ENABLED=true
+      - GF_SMTP_HOST=smtp.gmail.com:587
+      - GF_SMTP_USER=${MY_GMAIL_USER}
+      - GF_SMTP_PASSWORD=${MY_GMAIL_APP_PASS}
+      - GF_SMTP_FROM_ADDRESS=${ALERT_SENDER_EMAIL}
+      - GF_SMTP_FROM_NAME=Grafana-Netpulse
+
+      - GF_SERVER_ROOT_URL=http://localhost:5000
     depends_on:
       - prometheus
   

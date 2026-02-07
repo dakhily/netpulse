@@ -1,0 +1,111 @@
+
+apiVersion: 1
+
+contactPoints:
+    - orgId: 1
+      name: grafana-default-email
+      receivers:
+        - uid: cfc5xn1cc3mdcf
+          type: email
+          settings:
+            addresses: ${MY_GMAIL_USER}
+            singleEmail: false
+          disableResolveMessage: false
+
+policies:
+    - orgId: 1
+      receiver: grafana-default-email
+      group_by:
+        - grafana_folder
+        - alertname
+      routes:
+        - receiver: grafana-default-email
+          object_matchers:
+            - - App
+              - =
+              - Netpulse
+            - - Severity
+              - =
+              - Low
+              
+groups:
+    - orgId: 1
+      name: RED alerts
+      folder: Gold signals Alerts
+      interval: 5m
+      rules:
+        - uid: ffc5xot27ctmoe
+          title: CPU Saturation
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: PE7C7BF5940D67802
+              model:
+                editorMode: code
+                expr: |-
+                    100 *
+                    sum by (name) (
+                      rate(container_cpu_usage_seconds_total{name="netpulse"}[1m])
+                    )
+                    /
+                    on(name) group_left()
+                    clamp_min(
+                      max by (name) (
+                        container_spec_cpu_quota{name="netpulse"}
+                      )
+                      /
+                      max by (name) (
+                      container_spec_cpu_period{name="netpulse"}
+                      ),
+                    1
+                    )
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 90
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: ad24mfh
+          panelId: 4
+          noDataState: NoData
+          execErrState: Error
+          for: 5m
+          annotations:
+            __dashboardUid__: ad24mfh
+            __panelId__: "4"
+            SLO: TBD
+            summary: CPU usage
+          labels:
+            App: Netpulse
+            Severity: Low
+          isPaused: false
+          notification_settings:
+            receiver: grafana-default-email

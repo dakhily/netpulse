@@ -18,13 +18,13 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 1,
+  "id": 2,
   "links": [],
   "panels": [
     {
       "datasource": {
-        "type": "prometheus",
-        "name": "Prometheus-provisioning"
+        "name": "Prometheus-provisioning",
+        "type": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -106,7 +106,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "100 *\nsum by (name) (\n  rate(container_cpu_usage_seconds_total{name=\"netpulse\"}[1m])\n)\n/\non(name) group_left()\nclamp_min(\n  container_spec_cpu_quota{name=\"netpulse\"}\n  /\n  container_spec_cpu_period{name=\"netpulse\"},\n1\n)",
+          "expr": "100 *\nsum by (name) (\n  rate(container_cpu_usage_seconds_total{name=\"netpulse\"}[1m])\n)\n/\non(name) group_left()\nclamp_min(\n  max by (name) (\n    container_spec_cpu_quota{name=\"netpulse\"}\n  )\n  /\n  max by (name) (\n  container_spec_cpu_period{name=\"netpulse\"}\n  ),\n1\n)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -117,8 +117,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "name": "Prometheus-provisioning"
+        "name": "Prometheus-provisioning",
+        "type": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -211,8 +211,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "name": "Prometheus-provisioning"
+        "name": "Prometheus-provisioning",
+        "type": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -293,8 +293,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "name": "Prometheus-provisioning"
+        "name": "Prometheus-provisioning",
+        "type": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -377,8 +377,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "name": "Prometheus-provisioning"
+            "name": "Prometheus-provisioning",
+            "type": "prometheus"
           },
           "editorMode": "code",
           "expr": "histogram_quantile(0.99, \n  sum by (le, target) (\n    increase(netpulse_latency_seconds_bucket[5m])\n  )\n)",
@@ -404,7 +404,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Probes health",
+  "title": "Probe health",
   "uid": "ad24mfh",
-  "version": 12
+  "version": 4
 }
