@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -17,6 +18,7 @@ import (
 )
 
 const (
+	GlobalSlotSize = 10
 
 	//Failures
 	FailureNone = "none"
@@ -42,6 +44,8 @@ const (
 	FailureUnknown = "unknown"
 )
 
+var globalSem = make(chan struct{}, GlobalSlotSize)
+
 var pingLatency = promauto.NewHistogramVec(
 	prometheus.HistogramOpts{
 		Namespace: "netpulse",
@@ -64,6 +68,13 @@ var probeErrorsTotal = promauto.NewCounterVec(
 		Help: "Total number of probe errors by error reason",
 	},
 	[]string{"error_reason"},
+)
+
+var inFlightGauge = promauto.NewGauge(
+	prometheus.GaugeOpts{
+		Name: "in_flight_gauge",
+		Help: "Gauge of currently running probes",
+	},
 )
 
 func classifyTransportError(err error) string {
@@ -126,13 +137,18 @@ func classifyHTTPStatus(code int) string {
 	}
 }
 
+var httpClient = &http.Client{
+	Timeout: 5 * time.Second,
+}
+
 func probe(target string) {
+	inFlightGauge.Inc()
+	defer inFlightGauge.Dec()
+
 	pingCount.WithLabelValues(target).Inc()
-
 	start := time.Now()
-	client := http.Client{Timeout: 5 * time.Second}
 
-	resp, err := client.Get(target)
+	resp, err := httpClient.Get(target)
 	duration := time.Since(start).Seconds()
 
 	status := "success"
@@ -161,7 +177,32 @@ func probe(target string) {
 
 	fmt.Printf("Target: %s | Status: %s | Code: %d | Latency: %.3fs\n",
 		target, status, resp.StatusCode, duration)
-	fmt.Printf("Target: %s | Latency: %v\n", target, duration)
+}
+
+func startIndividualProber(target string, interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	var running atomic.Bool
+
+	for range ticker.C {
+		if !running.CompareAndSwap(false, true) {
+			continue
+		}
+
+		select {
+		case globalSem <- struct{}{}:
+		default:
+			running.Store(false)
+			continue
+		}
+
+		go func() {
+			defer running.Store(false)
+			defer func() { <-globalSem }()
+			probe(target)
+		}()
+	}
 }
 
 func main() {
@@ -178,14 +219,13 @@ func main() {
 
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		fmt.Println("Metric server starting on :8080")
 		http.ListenAndServe(":8080", nil)
 	}()
 
-	for {
-		for _, t := range targets {
-			probe(t)
-			time.Sleep(1 * time.Second)
-		}
+	for _, t := range targets {
+		go startIndividualProber(t, 500*time.Millisecond)
 	}
+
+	select {}
+
 }
