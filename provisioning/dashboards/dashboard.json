@@ -282,7 +282,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "(\n  sum by (target) (\n    rate(netpulse_latency_seconds_count{status=\"200\"}[1m])\n  )\n  /\n  sum by (target) (\n    rate(netpulse_latency_seconds_count[1m])\n  )\n) * 100\n",
+          "expr": "(\n  sum by (target) (\n    rate(netpulse_latency_seconds_count{status=\"success\"}[1m])\n  )\n  /\n  sum by (target) (\n    rate(netpulse_latency_seconds_count[1m])\n  )\n) * 100\n",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
