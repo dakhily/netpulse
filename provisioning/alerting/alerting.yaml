@@ -8,7 +8,7 @@ contactPoints:
         - uid: cfc5xn1cc3mdcf
           type: email
           settings:
-            addresses: ${MY_GMAIL_USER}
+            addresses: ${GF_SMTP_USER}
             singleEmail: false
           disableResolveMessage: false
 
